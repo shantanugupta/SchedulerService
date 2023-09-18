@@ -15,6 +15,10 @@ namespace SchedulerApi.Controllers
             _logger = logger;
         }
 
+        /// <summary>
+        /// Returns a default schedule
+        /// </summary>
+        /// <returns>Returns a list of blank schedules</returns>
         [HttpGet(Name = "GetSchedule")]
         public IEnumerable<Schedule> Get()
         {
@@ -25,11 +29,16 @@ namespace SchedulerApi.Controllers
             .ToArray();
         }
 
+        /// <summary>
+        /// Saves a schedule into database
+        /// </summary>
+        /// <param name="schedule">schedule to save</param>
+        /// <returns>Saved schedule object</returns>
         [HttpPost(Name = "SetSchedule")]
         public IEnumerable<Schedule> Set(Schedule schedule)
         {
-            IEnumerable<Schedule> schedules = new Schedule[] { schedule };
-            return schedules;
+            return Enumerable.Range(1, 5).Select(index => schedule)
+            .ToArray();
         }
     }
 }
