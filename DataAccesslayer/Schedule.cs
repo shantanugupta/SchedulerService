@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace SchedulerApi.ApiContracts
+namespace SchedulerApi.DataAccesslayer
 {
     public class Schedule
     {
@@ -30,18 +30,18 @@ namespace SchedulerApi.ApiContracts
 
         //[Required]
         [JsonPropertyName("active_start_date")]
-        public string? ActiveStartDate { get; set; }
+        public int ActiveStartDate { get; set; }
 
         //[Required]
         [JsonPropertyName("active_end_date")]
-        public string? ActiveEndDate { get; set; }
+        public int ActiveEndDate { get; set; }
 
         //[Required]
         [JsonPropertyName("active_start_time")]
-        public string? ActiveStartTime { get; set; }
+        public int ActiveStartTime { get; set; }
 
         [JsonPropertyName("active_end_time")]
-        public string? ActiveEndTime { get; set; }
+        public int ActiveEndTime { get; set; }
 
         [JsonPropertyName("freq_subday_type")]
         public int FreqSubdayType { get; set; }
