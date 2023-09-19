@@ -5,26 +5,26 @@ using System.Text.Json.Serialization;
 namespace SchedulerApi.DataContract
 {
     /// <summary>
-    /// Schedule contract
+    /// Schedule contract <br></br>
     /// See <a href="https://learn.microsoft.com/en-us/sql/relational-databases/system-tables/dbo-sysschedules-transact-sql?view=sql-server-ver16">this link</a> for more information.
     /// </summary>
     public class ScheduleContract
     {
         /// <summary>
-        /// Schedule ID
+        /// Schedule ID <br></br>
         /// Unique identifier of the schedule. This value is used to identify a schedule for distributed schedules.
         /// </summary>
         public Guid ScheduleId { get; set; }
 
         /// <summary>
-        /// Schedule verion
+        /// Schedule verion <br></br>
         /// Current version number of the schedule. For example, if a schedule has been modified 10 times, the version_number is 10.
         /// </summary>
         [JsonPropertyName("version_number")]
         public int VersionNumber { get; set; }
 
         /// <summary>
-        /// name property
+        /// name property <br></br>
         /// Allowed up to 40 uppercase and lowercase characters.
         /// </summary>
         [Required]
@@ -33,7 +33,7 @@ namespace SchedulerApi.DataContract
         public string? Name { get; set; }
 
         /// <summary>
-        /// description property
+        /// description property <br></br>
         /// Allowed up to 40 uppercase and lowercase characters.
         /// </summary>
         [RegularExpression(pattern: @"^[a-zA-Z''-'\s]{0,1024}$", ErrorMessage = "Invalid description. Allowed up to 1024 characters")]
@@ -41,16 +41,16 @@ namespace SchedulerApi.DataContract
         public string? Description { get; set; }
 
         /// <summary>
-        /// freq_type property
-        /// Valid values must be either of {1|4|8|16|32|64|128}
-        /// How frequently a schedule event runs for this schedule.
-        /// 1 = One time only
-        /// 4 = Daily
-        /// 8 = Weekly
-        /// 16 = Monthly
-        /// 32 = Monthly, relative to freq_interval
-        /// 64 = Yearly
-        /// 128 = Year long
+        /// freq_type property <br></br>
+        /// Valid values must be either of {1|4|8|16|32|64|128} <br></br>
+        /// How frequently a schedule event runs for this schedule. <br></br>
+        /// 1 = One time only <br></br>
+        /// 4 = Daily <br></br>
+        /// 8 = Weekly <br></br>
+        /// 16 = Monthly <br></br>
+        /// 32 = Monthly, relative to freq_interval <br></br>
+        /// 64 = Yearly <br></br>
+        /// 128 = Year long <br></br>
         /// </summary>
         [Required]
         [RegularExpression(pattern: @"^(1|4|8|16|32|64|128)$", ErrorMessage = "Invalid freq_type. Valid values must be either of {1|4|8|16|32|64|128}")]
@@ -68,10 +68,10 @@ namespace SchedulerApi.DataContract
         public int FreqInterval { get; set; }
 
         /// <summary>
-        /// Units for the freq_subday_interval. The following are the possible values and their descriptions.
-        /// 1 : At the specified time
-        /// 2 : hours
-        /// 4 : minutes
+        /// Units for the freq_subday_interval. The following are the possible values and their descriptions. <br></br>
+        /// 1 : At the specified time <br></br>
+        /// 2 : hours <br></br>
+        /// 4 : minutes <br></br>
         /// </summary>
         [Required]
         [RegularExpression(pattern: @"^(1|2|4)$", ErrorMessage = "Invalid freq_subday_type. Valid values must be either of {1|2|4}")]
@@ -79,8 +79,8 @@ namespace SchedulerApi.DataContract
         public int FreqSubdayType { get; set; }
 
         /// <summary>
-        /// Number of freq_subday_type periods to occur between each execution of the event.
-        /// Valid values are between 0-59
+        /// Number of freq_subday_type periods to occur between each execution of the event. <br></br>
+        /// Valid values are between 0-59 <br></br>
         /// </summary>
         [Required]
         [Range(0, 59, ErrorMessage = "Invalid freq_subday_interval. Valid values are 0-59")]
@@ -88,13 +88,13 @@ namespace SchedulerApi.DataContract
         public int FreqSubdayInterval { get; set; }
 
         /// <summary>
-        /// When freq_interval occurs in each month, if freq_type is 32 (monthly relative). Can be one of the following values:
-        /// 0 = freq_relative_interval is unused
-        /// 1 = First
-        /// 2 = Second
-        /// 4 = Third
-        /// 8 = Fourth
-        /// 16 = Last
+        /// When freq_interval occurs in each month, if freq_type is 32 (monthly relative). Can be one of the following values: <br></br>
+        /// 0 = freq_relative_interval is unused <br></br>
+        /// 1 = First <br></br>
+        /// 2 = Second <br></br>
+        /// 4 = Third <br></br>
+        /// 8 = Fourth <br></br>
+        /// 16 = Last <br></br>
         /// </summary>
         [Required]
         [RegularExpression(pattern: @"^(0|1|2|4|8|16)$", ErrorMessage = "freq_relative_interval freq_type. Valid values must be either of {0|1|2|4|8|16}")]
@@ -102,7 +102,7 @@ namespace SchedulerApi.DataContract
         public int FreqRelativeInterval { get; set; }
 
         /// <summary>
-        /// Number of weeks or months between the scheduled execution of an event. freq_recurrence_factor is used only if freq_type is 8, 16, or 32. If this field contains 0, freq_recurrence_factor is unused.
+        /// Number of weeks or months between the scheduled execution of an event. freq_recurrence_factor is used only if freq_type is 8, 16, or 32. If this field contains 0, freq_recurrence_factor is unused. <br></br>
         /// Valid values between 0-60
         /// </summary>
         [Required]
