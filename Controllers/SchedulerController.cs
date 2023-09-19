@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using SchedulerApi.DataAccesslayer;
-using SchedulerApi.DataContract;
+using SchedulerApi.Convertor;
+using SchedulerApi.Model;
+using SchedulerApi.ApiContract;
 using SchedulerApi.FunctionalLayer;
 
 namespace SchedulerApi.Controllers
@@ -73,11 +74,6 @@ namespace SchedulerApi.Controllers
             ScheduleManager.GenerateEvents(model);
 
             return response;
-            //var convertedScheduleDal = ScheduleManager.ConvertFrom(schedule);
-
-            //ScheduleManager.GenerateEvents(convertedScheduleDal);
-            //return Enumerable.Range(1, 5).Select(index => schedule)
-            //.ToArray();
         }
     }
 }

@@ -1,8 +1,8 @@
-﻿using SchedulerApi.DataAccesslayer;
+﻿using SchedulerApi.Model;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel;
 using System.Xml.Linq;
-using SchedulerApi.DataContract;
+using SchedulerApi.ApiContract;
 
 namespace SchedulerApi.FunctionalLayer
 {
@@ -18,13 +18,13 @@ namespace SchedulerApi.FunctionalLayer
     /// 7. Generate description
     /// 8. Filter schedule
     /// </summary>
-    public class ScheduleManager
+    internal class ScheduleManager
     {
         /// <summary>
         /// This function would validate all values presently set in this schedule. If the schedule is valid, response object would have flag set to true else false.
         /// </summary>
         /// <param name="schedule">Schedule to be validated</param>
-        public static Response<Schedule> ValidateSchedule(Schedule schedule)
+        internal static Response<Schedule> ValidateSchedule(Schedule schedule)
         {
             Response<Schedule> response = new Response<Schedule>();
             response.Error = IsScheduleValid(schedule);
@@ -36,7 +36,7 @@ namespace SchedulerApi.FunctionalLayer
         /// Generate all the events that can occur for schedule provided as input
         /// </summary>
         /// <param name="schedule">Schedule for which events have to be generated</param>
-        public static IEnumerable<ScheduleEvent> GenerateEvents(Schedule schedule)
+        internal static IEnumerable<ScheduleEvent> GenerateEvents(Schedule schedule)
         {
             throw new NotImplementedException();
         }
@@ -46,7 +46,7 @@ namespace SchedulerApi.FunctionalLayer
         /// </summary>
         /// <param name="schedule">Schedule for which description will be generated</param>
         /// <returns>Description of a schedule</returns>
-        public static Response<string> GenerateDescription(Schedule schedule)
+        internal static Response<string> GenerateDescription(Schedule schedule)
         {
             Response<string> response = new Response<string>();
             var isValid = IsScheduleValid(schedule);
@@ -68,7 +68,7 @@ namespace SchedulerApi.FunctionalLayer
             return response;
         }
 
-        public static Response<Schedule> Add(Schedule input)
+        internal static Response<Schedule> Add(Schedule input)
         {
             Response<Schedule> response = new Response<Schedule>();
 
@@ -80,24 +80,6 @@ namespace SchedulerApi.FunctionalLayer
                 response.Error = isValid;
                 return response;
             }
-
-            var s = new Schedule
-            {
-                ActiveEndDate = int.Parse(i.ActiveEndDate.ToString("yyyyMMdd")),
-                ActiveEndTime = int.Parse(i.ActiveEndTime.ToString("HHmmss")),
-                ActiveStartDate = int.Parse(i.ActiveStartDate.ToString("yyyyMMdd")),
-                ActiveStartTime = int.Parse(i.ActiveStartTime.ToString("HHmmss")),
-                Description = i.Description,
-                DurationInterval = i.DurationInterval,
-                DurationSubdayType = i.DurationSubdayType,
-                FreqInterval = i.FreqInterval,
-                FreqRecurrenceFactor = i.FreqRecurrenceFactor,
-                FreqRelativeInterval = i.FreqRelativeInterval,
-                FreqSubdayInterval = i.FreqSubdayInterval,
-                FreqSubdayType = i.FreqSubdayType,
-                FreqType = i.FreqType,
-                Name = i.Name
-            };
 
             return response;
         }
@@ -240,9 +222,5 @@ namespace SchedulerApi.FunctionalLayer
             return desc;
         }
 
-        public static Schedule ConvertFrom(ScheduleContract from)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

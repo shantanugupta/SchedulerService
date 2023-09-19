@@ -1,10 +1,24 @@
+using SchedulerApi.Model;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace SchedulerApi.DataAccesslayer
+namespace SchedulerApi.Model
 {
-    public class Schedule
+    public class Schedule:BaseModel
     {
+        /// <summary>
+        /// Schedule ID <br></br>
+        /// Unique identifier of the schedule. This value is used to identify a schedule for distributed schedules.
+        /// </summary>
+        public Guid ScheduleId { get; set; }
+
+        /// <summary>
+        /// Schedule verion <br></br>
+        /// Current version number of the schedule. For example, if a schedule has been modified 10 times, the version_number is 10.
+        /// </summary>
+        [JsonPropertyName("version_number")]
+        public int VersionNumber { get; set; }
+
         //[Required]
         [JsonPropertyName("name")]
         public string? Name { get; set; }
@@ -30,18 +44,18 @@ namespace SchedulerApi.DataAccesslayer
 
         //[Required]
         [JsonPropertyName("active_start_date")]
-        public int ActiveStartDate { get; set; }
+        public DateOnly ActiveStartDate { get; set; }
 
         //[Required]
         [JsonPropertyName("active_end_date")]
-        public int ActiveEndDate { get; set; }
+        public DateOnly ActiveEndDate { get; set; }
 
         //[Required]
         [JsonPropertyName("active_start_time")]
-        public int ActiveStartTime { get; set; }
+        public TimeOnly ActiveStartTime { get; set; }
 
         [JsonPropertyName("active_end_time")]
-        public int ActiveEndTime { get; set; }
+        public TimeOnly ActiveEndTime { get; set; }
 
         [JsonPropertyName("freq_subday_type")]
         public int FreqSubdayType { get; set; }

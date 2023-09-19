@@ -1,9 +1,11 @@
-﻿namespace SchedulerApi.DataAccesslayer
+﻿using SchedulerApi.Model;
+
+namespace SchedulerApi.Model
 {
     /// <summary>
     /// Represents one event 
     /// </summary>
-    public class ScheduleEvent
+    public class ScheduleEvent : BaseModel
     {
         /// <summary>
         /// Event start date

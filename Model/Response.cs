@@ -1,13 +1,14 @@
-﻿using System.Runtime.Serialization;
+﻿using SchedulerApi.Model;
+using System.Runtime.Serialization;
 
-namespace SchedulerApi.DataAccesslayer
+namespace SchedulerApi.Model
 {
     /// <summary>
     /// Unified response object
     /// </summary>
     /// <typeparam name="T">Entity to be returned as a response</typeparam>
     [DataContract]
-    public class Response<T>
+    public class Response<T> : BaseModel
     {
         /// <summary>
         /// Error entity if there is any error

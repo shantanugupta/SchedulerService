@@ -1,4 +1,4 @@
-﻿using SchedulerApi.DataAccesslayer;
+﻿using SchedulerApi.Model;
 using System.Runtime.Serialization;
 
 namespace SchedulerApi.FunctionalLayer

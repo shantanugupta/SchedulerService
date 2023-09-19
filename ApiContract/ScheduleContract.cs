@@ -2,7 +2,7 @@
 using System.Text.Json.Serialization;
 
 
-namespace SchedulerApi.DataContract
+namespace SchedulerApi.ApiContract
 {
     /// <summary>
     /// Schedule contract <br></br>
@@ -36,7 +36,7 @@ namespace SchedulerApi.DataContract
         /// description property <br></br>
         /// Allowed up to 40 uppercase and lowercase characters.
         /// </summary>
-        [RegularExpression(pattern: @"^[a-zA-Z''-'\s]{0,1024}$", ErrorMessage = "Invalid description. Allowed up to 1024 characters")]
+        [MaxLength(1024, ErrorMessage = "Invalid description. Allowed up to 1024 characters")]
         [JsonPropertyName("description")]
         public string? Description { get; set; }
 
