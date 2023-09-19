@@ -6,7 +6,7 @@ namespace SchedulerApi.FunctionalLayer
 {
     #region Enum for scheduler
 
-    public enum FreqType
+    internal enum FreqType
     {
         [Display(Name = "One time only")]
         [Description("Task will be scheduled one time only.")]
@@ -25,7 +25,7 @@ namespace SchedulerApi.FunctionalLayer
         MonthlyRelativeToFreqInterval = 32,
     };
 
-    public enum FreqIntervalWeekly
+    internal enum FreqIntervalWeekly
     {
         [Display(Name = "Sunday")]
         Sunday = 1,
@@ -43,7 +43,7 @@ namespace SchedulerApi.FunctionalLayer
         Saturday = 64
     };
 
-    public enum FreqIntervalMonthlyRelative
+    internal enum FreqIntervalMonthlyRelative
     {
         [Display(Name = "Sunday")]
         Sunday = 1,
@@ -67,7 +67,7 @@ namespace SchedulerApi.FunctionalLayer
         WeekendDay = 10
     };
 
-    public enum FreqSubdayType
+    internal enum FreqSubdayType
     {
         [Display(Name = "At the specified time")]
         AtTheSpecifiedTime = 1,
@@ -79,7 +79,7 @@ namespace SchedulerApi.FunctionalLayer
         Hours = 8,
     };
 
-    public enum FreqRelativeInterval
+    internal enum FreqRelativeInterval
     {
         [Display(Name = "First")]
         First = 1,

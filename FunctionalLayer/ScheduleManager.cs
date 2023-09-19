@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel;
 using System.Xml.Linq;
 using SchedulerApi.ApiContract;
+using SchedulerApi.Convertor;
 
 namespace SchedulerApi.FunctionalLayer
 {
@@ -88,21 +89,70 @@ namespace SchedulerApi.FunctionalLayer
         {
             var i = input;
 
+            if (i.ActiveStartDate > i.ActiveEndDate)
+            {
+                return new KeyValuePair<int, string>(81, "ActiveStartDate cannot be greater than ActiveEndDate");
+            }
+            bool isValid = false;
+            string messagePrefix = "For schedule";
+            switch (i.FreqType)
+            {
+                case (int)FreqType.OneTimeOnly:
+                    messagePrefix = "For OneTime Schedule";
+                    if (i.FreqInterval != 0)
+                        throw new ScheduleException("For OneTime Schedule, FreqInterval must be 0");
+                    break;
+                case (int)FreqType.Daily:
+                    messagePrefix = "For Daily Schedule";
 
-            //if (i.ActiveStartDate > i.ActiveEndDate)
-            //{
-            //    return new KeyValuePair<int, string>(81, "ActiveStartDate cannot be greater than ActiveEndDate");
-            //}
+                    IsFrequencyScheduleValid(i, messagePrefix);
+                    break;
+                case (int)FreqType.Weekly:
+                    messagePrefix = "For Weekly Schedule";
+                    if (!(0..127).In(i.FreqInterval))
+                        throw new ScheduleException($"{messagePrefix}, FreqInterval must be valid weekdays(1-127)");
+                    if(!(1..100).In(i.FreqRecurrenceFactor))
+                        throw new ScheduleException($"{messagePrefix}, FreqRecurrenceFactor must be between (1-100)");
+                    
+                    IsFrequencyScheduleValid(i, messagePrefix);
 
-            //if (i.ActiveStartDate < DateTime.UtcNow.Date)
-            //{
-            //    return new KeyValuePair<int, string>(82, "ActiveStartDate should be greater than current date");
-            //}
+                    break;
+                case (int)FreqType.Monthly:
+                     messagePrefix = "For Monthly Schedule";
 
-            //if (i.ActiveEndDate < DateTime.UtcNow)
-            //{
-            //    return new KeyValuePair<int, string>(83, "ActiveEndDate should be greater than current date");
-            //}
+                    IsFrequencyScheduleValid(i, messagePrefix);
+                    break;
+                case (int)FreqType.MonthlyRelativeToFreqInterval:
+                     messagePrefix = "For Monthly relative Schedule";
+
+                    IsFrequencyScheduleValid(i, messagePrefix);
+                    break;
+                default:
+                    break;
+            }
+
+            return new KeyValuePair<int, string>(0, "Success!!");
+        }
+
+        private static KeyValuePair<int, string> IsFrequencyScheduleValid(Schedule input, string messagePrefix)
+        {
+            var i = input;
+
+            if (i.ActiveStartDate > i.ActiveEndDate)
+                throw new ScheduleException($"{messagePrefix}, ActiveStartDate must be less than to ActiveEndDate");
+            if (i.OccuranceChoiceState == true && i.ActiveStartTime != i.ActiveEndTime)
+                throw new ScheduleException($"{messagePrefix}, ActiveStartTime must be Equal to ActiveEndTime");
+            if (i.OccuranceChoiceState == false)
+            {
+                int[] allowedSubdayType = { (int)FreqSubdayType.Hours, (int)FreqSubdayType.Minutes };
+
+                if (!allowedSubdayType.Contains(i.FreqSubdayType)) // i.FreqSubdayInterval
+                    throw new ScheduleException($"{messagePrefix}, FreqSubdayType is required");
+                else if (i.FreqSubdayType == (int)FreqSubdayType.Hours && !(1..24).In(i.FreqSubdayInterval))
+                    throw new ScheduleException($"{messagePrefix}, FreqSubdayInterval must be between 1-24 hours");
+                else if (i.FreqSubdayType == (int)FreqSubdayType.Minutes && !(1..60).In(i.FreqSubdayInterval))
+                    throw new ScheduleException($"{messagePrefix}, FreqSubdayInterval must be between 1-60 minutes");
+            }
 
             return new KeyValuePair<int, string>(0, "Success!!");
         }
@@ -222,5 +272,6 @@ namespace SchedulerApi.FunctionalLayer
             return desc;
         }
 
+        
     }
 }

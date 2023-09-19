@@ -3,6 +3,12 @@ using SchedulerApi.ApiContract;
 
 namespace SchedulerApi.Convertor
 {
+
+    internal static class RangeExtensions
+    {
+        public static bool In(this Range range, int value) => range.Start.Value <= value && value <= range.End.Value;
+    }
+
     internal static class Convertor
     {
         internal static T ConvertTo<T>(this ScheduleContract from) where T : BaseModel
