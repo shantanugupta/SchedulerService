@@ -6,6 +6,7 @@ namespace SchedulerApi.DataContract
 {
     /// <summary>
     /// Schedule contract
+    /// See <a href="https://learn.microsoft.com/en-us/sql/relational-databases/system-tables/dbo-sysschedules-transact-sql?view=sql-server-ver16">this link</a> for more information.
     /// </summary>
     public class ScheduleContract
     {
