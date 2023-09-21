@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace SchedulerApi.Model
 {
-    public class Schedule:BaseModel
+    internal class Schedule:BaseModel
     {
         /// <summary>
         /// Schedule ID <br></br>

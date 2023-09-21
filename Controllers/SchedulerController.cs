@@ -24,7 +24,7 @@ namespace SchedulerApi.Controllers
     {
         private readonly ILogger<SchedulerController> _logger;
 
-        public SchedulerController(ILogger<SchedulerController> logger)
+        internal SchedulerController(ILogger<SchedulerController> logger)
         {
             _logger = logger;
         }

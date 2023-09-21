@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace SchedulerApi.ApiFilters
 {
-    public class RequireJsonContentTypeAttribute : IAsyncActionFilter
+    internal class RequireJsonContentTypeAttribute : IAsyncActionFilter
     {
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {

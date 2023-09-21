@@ -172,7 +172,7 @@ namespace SchedulerApi.FunctionalLayer
         /// <summary>
         /// This function copies a logic of stored procedure written in sql server. Procedure name sp_get_schedule_description
         /// </summary>
-        /// <returns>Message to be displayed in TextBox of UI/returns>
+        /// <returns>Message to be displayed in TextBox of UI</returns>
         private static string GenerateScheduleDescription(Schedule schedule)
         {
             string desc = string.Empty;

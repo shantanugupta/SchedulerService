@@ -4,15 +4,18 @@ using System.Runtime.Serialization;
 namespace SchedulerApi.FunctionalLayer
 {
 
+    /// <summary>
+    /// Wrapped exception for all schedule related events
+    /// </summary>
     [Serializable]
     public class ScheduleException : Exception
     {
-        public ScheduleException() { }
+        internal ScheduleException() { }
 
-        public ScheduleException(string message)
+        internal ScheduleException(string message)
             : base(message) { }
 
-        public ScheduleException(string message, Exception inner)
+        internal ScheduleException(string message, Exception inner)
             : base(message, inner) { }
     }
 }

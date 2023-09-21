@@ -112,12 +112,15 @@ namespace SchedulerApi.ApiContract
         [Range(0, 60, ErrorMessage = "freq_recurrence_factor freq_type. Valid values must be between 0-60")]
         public int FreqRecurrenceFactor { get; set; }
 
+        /// <summary>
+        /// It's a representation of duration in minutes or hours. Valid values can be either 2 or 4
+        /// </summary>
         [Required]
         [JsonPropertyName("duration_subday_type")]
         public int DurationSubdayType { get; set; }
 
         /// <summary>
-        /// 
+        /// Duration interval in hours or minutes. 1-24 or 1-60
         /// </summary>
         [Required]
         [JsonPropertyName("duration_interval")]
