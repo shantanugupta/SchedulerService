@@ -64,14 +64,49 @@ namespace SchedulerApi.Controllers
         [Route("GenerateEvents")]
         public Response<ScheduleEvent> GenerateEvents(ScheduleContract schedule)
         {
-            Response<ScheduleEvent> response = new()
-            {
-                Error = new KeyValuePair<int, string>(1, "Not yet implemented")
-            };
+            Response<ScheduleEvent> response = new();
 
-            var model = schedule.ConvertTo<Schedule>();
+            Schedule model;
+            try
+            {
+                model = schedule.ConvertTo<Schedule>();
+            }
+            catch (FormatException ex)
+            {
+                response.Error.Add(new KeyValuePair<int, string>(1, ex.Message));
+                return response;
+            }
+            
 
             ScheduleManager.GenerateEvents(model);
+
+            return response;
+        }
+
+        /// <summary>
+        /// Generates description
+        /// </summary>
+        /// <param name="schedule">schedule to use</param>
+        /// <returns>Generates schedule description from server</returns>
+        [HttpPost]
+        [Route("GenerateDescription")]
+        public Response<string> GenerateDescription(ScheduleContract schedule)
+        {
+            Response<string> response = new();
+
+            Schedule model;
+            try
+            {
+                model = schedule.ConvertTo<Schedule>();
+            }
+            catch (FormatException ex)
+            {
+                response.Error.Add(new KeyValuePair<int, string>(1, ex.Message));
+                return response;
+            }
+
+
+            response = ScheduleManager.GenerateDescription(model);
 
             return response;
         }

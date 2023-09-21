@@ -14,7 +14,7 @@ namespace SchedulerApi.Model
         /// Error entity if there is any error
         /// </summary>
         [DataMember]
-        public KeyValuePair<int, string> Error { get; set; }
+        public IDictionary<int, string> Error { get; set; }
 
         /// <summary>
         /// Response entity if processing is successful.
@@ -27,7 +27,7 @@ namespace SchedulerApi.Model
         /// </summary>
         public Response()
         {
-            Error = new KeyValuePair<int, string>(0, "Success!!");
+            Error = new Dictionary<int, string>();
         }
 
         /// <summary>

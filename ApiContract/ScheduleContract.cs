@@ -14,7 +14,8 @@ namespace SchedulerApi.ApiContract
         /// Schedule ID <br></br>
         /// Unique identifier of the schedule. This value is used to identify a schedule for distributed schedules.
         /// </summary>
-        public Guid ScheduleId { get; set; }
+        //[JsonPropertyName("schedule_id")]
+        //public string ScheduleId { get; set; }
 
         /// <summary>
         /// Schedule verion <br></br>
@@ -28,7 +29,8 @@ namespace SchedulerApi.ApiContract
         /// Allowed up to 40 uppercase and lowercase characters.
         /// </summary>
         [Required]
-        [RegularExpression(pattern: @"^[a-zA-Z''-'\s]{1,40}$", ErrorMessage = "Invalid name")]
+        [MinLength(3, ErrorMessage = "Invalid name. Min length 3 required")]
+        [MaxLength(40, ErrorMessage = "Invalid name. Max allowed length 40")]
         [JsonPropertyName("name")]
         public string? Name { get; set; }
 
@@ -53,7 +55,7 @@ namespace SchedulerApi.ApiContract
         /// 128 = Year long <br></br>
         /// </summary>
         [Required]
-        [RegularExpression(pattern: @"^(1|4|8|16|32|64|128)$", ErrorMessage = "Invalid freq_type. Valid values must be either of {1|4|8|16|32|64|128}")]
+        [Range(1,32, ErrorMessage = "Invalid freq_type. Valid values must be either of {1|4|8|16|32}")]
         [JsonPropertyName("freq_type")]
         public int FreqType { get; set; }
 
@@ -74,7 +76,7 @@ namespace SchedulerApi.ApiContract
         /// 4 : minutes <br></br>
         /// </summary>
         [Required]
-        [RegularExpression(pattern: @"^(1|2|4)$", ErrorMessage = "Invalid freq_subday_type. Valid values must be either of {1|2|4}")]
+        [Range(1, 4, ErrorMessage = "Invalid freq_subday_type. Valid values must be either of {1|2|4}")]
         [JsonPropertyName("freq_subday_type")]
         public int FreqSubdayType { get; set; }
 
@@ -97,7 +99,7 @@ namespace SchedulerApi.ApiContract
         /// 16 = Last <br></br>
         /// </summary>
         [Required]
-        [RegularExpression(pattern: @"^(0|1|2|4|8|16)$", ErrorMessage = "freq_relative_interval freq_type. Valid values must be either of {0|1|2|4|8|16}")]
+        [Range(0, 16, ErrorMessage = "freq_relative_interval freq_type. Valid values must be either of {0|1|2|4|8|16}")]
         [JsonPropertyName("freq_relative_interval")]
         public int FreqRelativeInterval { get; set; }
 

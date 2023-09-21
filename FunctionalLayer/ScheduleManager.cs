@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Xml.Linq;
 using SchedulerApi.ApiContract;
 using SchedulerApi.Convertor;
+using System.Collections.Generic;
 
 namespace SchedulerApi.FunctionalLayer
 {
@@ -49,17 +50,13 @@ namespace SchedulerApi.FunctionalLayer
         /// <returns>Description of a schedule</returns>
         internal static Response<string> GenerateDescription(Schedule schedule)
         {
-            Response<string> response = new Response<string>();
+            Response<string> response = new();
             var isValid = IsScheduleValid(schedule);
             response.Error = isValid;
 
             //Invalid schedule found? return
-            if (isValid.Key != 0) {
-                var scheduleException = new ScheduleException("Schedule parsing failure");
-                scheduleException.Data.Add(isValid.Key, isValid.Value);
-                //throw scheduleException;
+            if (isValid.Count >0 && !isValid.TryGetValue(0, out _))
                 return response;
-            }
 
             //We have a valid schedule here. Let's generate it's description
             string scheduleDescription = GenerateScheduleDescription(schedule);
@@ -71,90 +68,105 @@ namespace SchedulerApi.FunctionalLayer
 
         internal static Response<Schedule> Add(Schedule input)
         {
-            Response<Schedule> response = new Response<Schedule>();
+            Response<Schedule> response = new();
 
             var i = input;
             var isValid = IsScheduleValid(input);
 
-            if (isValid.Key > 0)
+            if (!isValid.TryGetValue(0, out _))
             {
-                response.Error = isValid;
+                foreach (var kv in isValid)
+                    response.Error.Add(kv.Key, kv.Value);
                 return response;
             }
 
             return response;
         }
 
-        private static KeyValuePair<int, string> IsScheduleValid(Schedule input)
+        private static IDictionary<int, string> IsScheduleValid(Schedule input)
         {
             var i = input;
+            Dictionary<int, string> errorList = new();
 
             if (i.ActiveStartDate > i.ActiveEndDate)
             {
-                return new KeyValuePair<int, string>(81, "ActiveStartDate cannot be greater than ActiveEndDate");
+                errorList.Add(1, "ActiveStartDate cannot be greater than ActiveEndDate");
             }
-            bool isValid = false;
+
             string messagePrefix = "For schedule";
             switch (i.FreqType)
             {
                 case (int)FreqType.OneTimeOnly:
                     messagePrefix = "For OneTime Schedule";
                     if (i.FreqInterval != 0)
-                        throw new ScheduleException("For OneTime Schedule, FreqInterval must be 0");
+                        errorList.Add(2,$"{messagePrefix}, FreqInterval must be 0");
                     break;
                 case (int)FreqType.Daily:
                     messagePrefix = "For Daily Schedule";
-
-                    IsFrequencyScheduleValid(i, messagePrefix);
                     break;
                 case (int)FreqType.Weekly:
                     messagePrefix = "For Weekly Schedule";
                     if (!(0..127).In(i.FreqInterval))
-                        throw new ScheduleException($"{messagePrefix}, FreqInterval must be valid weekdays(1-127)");
-                    if(!(1..100).In(i.FreqRecurrenceFactor))
-                        throw new ScheduleException($"{messagePrefix}, FreqRecurrenceFactor must be between (1-100)");
-                    
-                    IsFrequencyScheduleValid(i, messagePrefix);
-
+                        errorList.Add(3, $"{messagePrefix}, FreqInterval(day of week(s) selection) must be valid weekdays(1-127)");
+                    if (!(1..100).In(i.FreqRecurrenceFactor))
+                        errorList.Add(4, $"{messagePrefix}, FreqRecurrenceFactor(nth week) must be between (1-100)");
                     break;
                 case (int)FreqType.Monthly:
-                     messagePrefix = "For Monthly Schedule";
-
-                    IsFrequencyScheduleValid(i, messagePrefix);
+                    messagePrefix = "For Monthly Schedule";
+                    if (!(1..31).In(i.FreqInterval))
+                        errorList.Add(5, $"{messagePrefix}, FreqInterval(nth day) must be valid day of the month(1-31)");
+                    if (!(1..60).In(i.FreqRecurrenceFactor))
+                        errorList.Add(6, $"{messagePrefix}, FreqRecurrenceFactor(nth month) must be recurrance month(1-60)");
                     break;
                 case (int)FreqType.MonthlyRelativeToFreqInterval:
-                     messagePrefix = "For Monthly relative Schedule";
+                    messagePrefix = "For Monthly relative Schedule";
+                    if (!Enum.TryParse<FreqRelativeInterval>(i.FreqRelativeInterval.ToString(), out _))
+                        errorList.Add(7, $"{messagePrefix}, FreqRelativeInterval(1st, 2nd, 3rd...last) must be one of the valid value(1,2,4,8,16)");
 
-                    IsFrequencyScheduleValid(i, messagePrefix);
+                    if (!Enum.TryParse<FreqIntervalMonthlyRelative>(i.FreqInterval.ToString(), out _))
+                        errorList.Add(8, $"{messagePrefix}, FreqInterval(Weekday/Weekend etc) must be one of the valid value(1-10)");
+
+                    if (!(1..60).In(i.FreqRecurrenceFactor))
+                        errorList.Add(9, $"{messagePrefix}, FreqRecurrenceFactor(nth month) must be recurrance month(1-60)");
                     break;
                 default:
+                    errorList.Add(15, $"{messagePrefix}, Invalid FreqTpe(Schedule type i.e. daily, weekly..). Valid values are (1,4,8,16,32)");
                     break;
             }
 
-            return new KeyValuePair<int, string>(0, "Success!!");
+            if (i.FreqType != (int)FreqType.OneTimeOnly)
+            {
+                var freqErrorList = IsFrequencyScheduleValid(i, messagePrefix);
+                return errorList.Union(freqErrorList).ToDictionary(kv => kv.Key, kv=>kv.Value);
+
+            }
+
+            return errorList;
         }
 
-        private static KeyValuePair<int, string> IsFrequencyScheduleValid(Schedule input, string messagePrefix)
+        private static IDictionary<int, string> IsFrequencyScheduleValid(Schedule input, string messagePrefix)
         {
+            Dictionary<int, string> errorList = new();
+
             var i = input;
 
             if (i.ActiveStartDate > i.ActiveEndDate)
-                throw new ScheduleException($"{messagePrefix}, ActiveStartDate must be less than to ActiveEndDate");
+                errorList.Add(10, $"{messagePrefix}, ActiveStartDate must be less than to ActiveEndDate");
             if (i.OccuranceChoiceState == true && i.ActiveStartTime != i.ActiveEndTime)
-                throw new ScheduleException($"{messagePrefix}, ActiveStartTime must be Equal to ActiveEndTime");
+                errorList.Add(11, $"{messagePrefix}, ActiveStartTime must be Equal to ActiveEndTime");
             if (i.OccuranceChoiceState == false)
             {
                 int[] allowedSubdayType = { (int)FreqSubdayType.Hours, (int)FreqSubdayType.Minutes };
 
                 if (!allowedSubdayType.Contains(i.FreqSubdayType)) // i.FreqSubdayInterval
-                    throw new ScheduleException($"{messagePrefix}, FreqSubdayType is required");
+                    errorList.Add(12, $"{messagePrefix}, FreqSubdayType(Type of occurance min/hour) is required");
                 else if (i.FreqSubdayType == (int)FreqSubdayType.Hours && !(1..24).In(i.FreqSubdayInterval))
-                    throw new ScheduleException($"{messagePrefix}, FreqSubdayInterval must be between 1-24 hours");
+                    errorList.Add(13, $"{messagePrefix}, FreqSubdayInterval(nth hour) must be between 1-24 hours");
                 else if (i.FreqSubdayType == (int)FreqSubdayType.Minutes && !(1..60).In(i.FreqSubdayInterval))
-                    throw new ScheduleException($"{messagePrefix}, FreqSubdayInterval must be between 1-60 minutes");
+                    errorList.Add(14, $"{messagePrefix}, FreqSubdayInterval(nth minute) must be between 1-60 minutes");
             }
 
-            return new KeyValuePair<int, string>(0, "Success!!");
+            return errorList;
         }
 
         /// <summary>
@@ -271,7 +283,5 @@ namespace SchedulerApi.FunctionalLayer
 
             return desc;
         }
-
-        
     }
 }

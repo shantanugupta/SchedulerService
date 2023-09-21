@@ -28,7 +28,7 @@ namespace SchedulerApi.Convertor
         {
             var to = new Schedule
             {
-                ScheduleId = from.ScheduleId,
+                //ScheduleId = from.ScheduleId,
                 VersionNumber = from.VersionNumber,
                 Name = from.Name,
                 Description = from.Description,
@@ -54,7 +54,7 @@ namespace SchedulerApi.Convertor
         {
             var to = new ScheduleContract
             {
-                ScheduleId = from.ScheduleId,
+                //ScheduleId = from.ScheduleId,
                 VersionNumber = from.VersionNumber,
                 Name = from.Name,
                 Description = from.Description,
