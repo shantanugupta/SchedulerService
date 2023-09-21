@@ -120,10 +120,10 @@ namespace SchedulerApi.FunctionalLayer
                     break;
                 case (int)FreqType.MonthlyRelativeToFreqInterval:
                     messagePrefix = "For Monthly relative Schedule";
-                    if (!Enum.TryParse<FreqRelativeInterval>(i.FreqRelativeInterval.ToString(), out _))
+                    if (!Enum.IsDefined((FreqRelativeInterval)i.FreqRelativeInterval))
                         errorList.Add(7, $"{messagePrefix}, FreqRelativeInterval(1st, 2nd, 3rd...last) must be one of the valid value(1,2,4,8,16)");
 
-                    if (!Enum.TryParse<FreqIntervalMonthlyRelative>(i.FreqInterval.ToString(), out _))
+                    if (!Enum.IsDefined((FreqIntervalMonthlyRelative)i.FreqInterval))
                         errorList.Add(8, $"{messagePrefix}, FreqInterval(Weekday/Weekend etc) must be one of the valid value(1-10)");
 
                     if (!(1..60).In(i.FreqRecurrenceFactor))
@@ -159,7 +159,7 @@ namespace SchedulerApi.FunctionalLayer
                 int[] allowedSubdayType = { (int)FreqSubdayType.Hours, (int)FreqSubdayType.Minutes };
 
                 if (!allowedSubdayType.Contains(i.FreqSubdayType)) // i.FreqSubdayInterval
-                    errorList.Add(12, $"{messagePrefix}, FreqSubdayType(Type of occurance min/hour) is required");
+                    errorList.Add(12, $"{messagePrefix}, FreqSubdayType(Type of occurance min/hour) must be (4/8)");
                 else if (i.FreqSubdayType == (int)FreqSubdayType.Hours && !(1..24).In(i.FreqSubdayInterval))
                     errorList.Add(13, $"{messagePrefix}, FreqSubdayInterval(nth hour) must be between 1-24 hours");
                 else if (i.FreqSubdayType == (int)FreqSubdayType.Minutes && !(1..60).In(i.FreqSubdayInterval))
