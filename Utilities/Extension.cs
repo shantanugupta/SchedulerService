@@ -1,5 +1,6 @@
 ﻿using SchedulerApi.Model;
 using SchedulerApi.ApiContract;
+using SchedulerApi.FunctionalLayer;
 
 namespace SchedulerApi.Convertor
 {
@@ -7,9 +8,24 @@ namespace SchedulerApi.Convertor
     internal static class RangeExtensions
     {
         public static bool In(this Range range, int value) => range.Start.Value <= value && value <= range.End.Value;
+
+        public static DateTime Add(this DateTime input, int interval, FreqSubdayType type)
+        {
+            switch (type)
+            {                
+                case FreqSubdayType.Seconds:
+                    return input.AddSeconds(interval);
+                case FreqSubdayType.Minutes:
+                    return input.AddMinutes(interval);
+                case FreqSubdayType.Hours:
+                    return input.AddHours(interval);
+                default:
+                    throw new ScheduleException("FreqSubdayType not supported");
+            }
+        }
     }
 
-    internal static class Convertor
+    internal static class Extension
     {
         internal static T ConvertTo<T>(this ScheduleContract from) where T : BaseModel
         {
@@ -77,3 +93,4 @@ namespace SchedulerApi.Convertor
         }
     }
 }
+

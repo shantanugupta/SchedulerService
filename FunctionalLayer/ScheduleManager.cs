@@ -5,6 +5,8 @@ using System.Xml.Linq;
 using SchedulerApi.ApiContract;
 using SchedulerApi.Convertor;
 using System.Collections.Generic;
+using Microsoft.VisualBasic;
+using System.Runtime.Serialization;
 
 namespace SchedulerApi.FunctionalLayer
 {
@@ -46,6 +48,7 @@ namespace SchedulerApi.FunctionalLayer
         {
             return GenerateEventsHelper(schedule);
         }
+
 
         /// <summary>
         /// This function generates description of the schedule.

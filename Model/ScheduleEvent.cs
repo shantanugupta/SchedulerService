@@ -10,12 +10,12 @@ namespace SchedulerApi.Model
         /// <summary>
         /// Event start date
         /// </summary>
-        public DateOnly StartDate { get; set; }
+        public DateTime StartDate { get; set; }
 
         /// <summary>
         /// Event end date
         /// </summary>
-        public DateOnly EndDate { get; set; }
+        public DateTime EndDate { get; set; }
 
         /// <summary>
         /// Unique event id(system generated)
