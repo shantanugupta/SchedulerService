@@ -22,14 +22,18 @@ namespace SchedulerApi.FunctionalLayer
     /// </summary>
     internal class ScheduleManager
     {
+        #region Management functions
+
         /// <summary>
         /// This function would validate all values presently set in this schedule. If the schedule is valid, response object would have flag set to true else false.
         /// </summary>
         /// <param name="schedule">Schedule to be validated</param>
         internal static Response<Schedule> ValidateSchedule(Schedule schedule)
         {
-            Response<Schedule> response = new Response<Schedule>();
-            response.Error = IsScheduleValid(schedule);
+            Response<Schedule> response = new()
+            {
+                Error = IsScheduleValid(schedule)
+            };
 
             return response;
         }
@@ -40,7 +44,7 @@ namespace SchedulerApi.FunctionalLayer
         /// <param name="schedule">Schedule for which events have to be generated</param>
         internal static IEnumerable<ScheduleEvent> GenerateEvents(Schedule schedule)
         {
-            throw new NotImplementedException();
+            return GenerateEventsHelper(schedule);
         }
 
         /// <summary>
@@ -55,7 +59,7 @@ namespace SchedulerApi.FunctionalLayer
             response.Error = isValid;
 
             //Invalid schedule found? return
-            if (isValid.Count >0 && !isValid.TryGetValue(0, out _))
+            if (isValid.Count > 0 && !isValid.TryGetValue(0, out _))
                 return response;
 
             //We have a valid schedule here. Let's generate it's description
@@ -99,7 +103,7 @@ namespace SchedulerApi.FunctionalLayer
                 case (int)FreqType.OneTimeOnly:
                     messagePrefix = "For OneTime Schedule";
                     if (i.FreqInterval != 0)
-                        errorList.Add(2,$"{messagePrefix}, FreqInterval must be 0");
+                        errorList.Add(2, $"{messagePrefix}, FreqInterval must be 0");
                     break;
                 case (int)FreqType.Daily:
                     messagePrefix = "For Daily Schedule";
@@ -137,7 +141,7 @@ namespace SchedulerApi.FunctionalLayer
             if (i.FreqType != (int)FreqType.OneTimeOnly)
             {
                 var freqErrorList = IsFrequencyScheduleValid(i, messagePrefix);
-                return errorList.Union(freqErrorList).ToDictionary(kv => kv.Key, kv=>kv.Value);
+                return errorList.Union(freqErrorList).ToDictionary(kv => kv.Key, kv => kv.Value);
 
             }
 
@@ -175,28 +179,41 @@ namespace SchedulerApi.FunctionalLayer
         /// <returns>Message to be displayed in TextBox of UI</returns>
         private static string GenerateScheduleDescription(Schedule schedule)
         {
-            string desc = string.Empty;
+            var timeFormat = "hh:mm A";
+            var dateFormat = "YYYY/MM/DD";
+            var dateTimeFormat = dateFormat + ' ' + timeFormat;
 
-            var s = schedule;
+            string desc = "Occurs";
+            var sch = schedule;
 
-            FreqType f = (FreqType)s.FreqType;
+            var active_start_time_string = sch.ActiveStartTime.ToString(timeFormat); // sch.ActiveStartTime == TimeOnly. ? "[start time not provided]" : sch.ActiveStartTime.ToString(timeFormat);
+            var active_end_time_string = sch.ActiveEndTime.ToString(timeFormat); // sch.ActiveEndTime === undefined ? "[end time not provided]" : moment(sch.ActiveEndTime, timeFormat).format(timeFormat);
+            var active_start_date_string = sch.ActiveStartDate.ToString(dateFormat); //sch.ActiveStartDate === undefined ? "[start date not provided]" : moment(sch.ActiveStartDate).format(dateFormat);
+            var active_end_date_string = sch.ActiveEndDate.ToString(dateFormat); //sch.ActiveEndDate === undefined ? "[end date not provided]" : moment(sch.ActiveEndDate).format(dateFormat);
+
+
+
+            FreqType f = (FreqType)sch.FreqType;
 
             switch (f)
             {
                 case FreqType.OneTimeOnly:
-                    desc = "Once on " + s.ActiveStartDate.ToString() + " at "
-                        + s.ActiveStartTime.ToString();
+                    desc += " on " + active_start_date_string + " at " + active_start_time_string;
+                    // Occurs on x(date) at y(time)
                     break;
                 case FreqType.Daily:
-                    desc = "Every day ";
+                    desc += " every " + sch.FreqInterval + " day(s)";
+                    // Occurs every n days(s)
                     break;
+
+                // TODO
                 case FreqType.Weekly:
-                    desc = "Every " + s.FreqRecurrenceFactor + " week(s) on ";
+                    desc = "Every " + sch.FreqRecurrenceFactor + " week(s) on ";
                     byte loop = 1;
                     while (loop <= 7)
                     {
                         int power = (int)System.Math.Pow(2, loop - 1);
-                        if ((s.FreqInterval & power) == power)
+                        if ((sch.FreqInterval & power) == power)
                         {
                             desc = desc + DateTime.Parse("1996/12/0" + (loop + 1).ToString()).DayOfWeek.ToString();
                             loop++;
@@ -210,13 +227,13 @@ namespace SchedulerApi.FunctionalLayer
                     }
                     break;
                 case FreqType.Monthly:
-                    desc = "Every " + s.FreqRecurrenceFactor.ToString() + " months(s) on day " + s.FreqInterval.ToString() + " of that month ";
+                    desc = "Every " + sch.FreqRecurrenceFactor.ToString() + " months(s) on day " + sch.FreqInterval.ToString() + " of that month ";
                     break;
                 case FreqType.MonthlyRelativeToFreqInterval:
-                    desc = "Every " + s.FreqRecurrenceFactor.ToString() + " months(s) on the ";
+                    desc = "Every " + sch.FreqRecurrenceFactor.ToString() + " months(s) on the ";
 
                     string freq_rel_intv = string.Empty;
-                    FreqRelativeInterval fri = (FreqRelativeInterval)s.FreqRelativeInterval;
+                    FreqRelativeInterval fri = (FreqRelativeInterval)sch.FreqRelativeInterval;
                     switch (fri)
                     {
                         case FreqRelativeInterval.First:
@@ -237,11 +254,11 @@ namespace SchedulerApi.FunctionalLayer
                     }
 
                     string freq_intv_str = string.Empty;
-                    FreqIntervalMonthlyRelative fimr = (FreqIntervalMonthlyRelative)s.FreqInterval;
+                    FreqIntervalMonthlyRelative fimr = (FreqIntervalMonthlyRelative)sch.FreqInterval;
 
                     if (fimr > FreqIntervalMonthlyRelative.Sunday && fimr < FreqIntervalMonthlyRelative.Day)
                     {
-                        freq_intv_str = DateTime.Parse("1996/12/0" + (s.FreqInterval + 1).ToString()).DayOfWeek.ToString();
+                        freq_intv_str = DateTime.Parse("1996/12/0" + (sch.FreqInterval + 1).ToString()).DayOfWeek.ToString();
                     }
                     else if (fimr == FreqIntervalMonthlyRelative.Day)
                     {
@@ -260,28 +277,91 @@ namespace SchedulerApi.FunctionalLayer
             }//END SWITCH FreqType variations
 
             string FreqSubdayType_str = string.Empty;
-            FreqSubdayType fst = (FreqSubdayType)s.FreqSubdayType;
+            FreqSubdayType fst = (FreqSubdayType)sch.FreqSubdayType;
             switch (fst)
             {
                 case FreqSubdayType.AtTheSpecifiedTime:
-                    FreqSubdayType_str = "at " + s.ActiveStartTime.ToString();
+                    FreqSubdayType_str = "at " + sch.ActiveStartTime.ToString();
                     break;
                 case FreqSubdayType.Seconds:
-                    FreqSubdayType_str = "every " + s.FreqSubdayInterval.ToString() + " second(s)";
+                    FreqSubdayType_str = "every " + sch.FreqSubdayInterval.ToString() + " second(s)";
                     break;
                 case FreqSubdayType.Minutes:
-                    FreqSubdayType_str = "every " + s.FreqSubdayInterval.ToString() + " minute(s)";
+                    FreqSubdayType_str = "every " + sch.FreqSubdayInterval.ToString() + " minute(s)";
                     break;
                 case FreqSubdayType.Hours:
-                    FreqSubdayType_str = "every " + s.FreqSubdayInterval.ToString() + " hour(s)";
+                    FreqSubdayType_str = "every " + sch.FreqSubdayInterval.ToString() + " hour(s)";
                     break;
             }
 
             desc = desc + FreqSubdayType_str;
             if (fst == FreqSubdayType.Hours || fst == FreqSubdayType.Minutes || fst == FreqSubdayType.Seconds)
-                desc = desc + " between " + s.ActiveStartTime + " and " + s.ActiveEndTime;
+                desc = desc + " between " + sch.ActiveStartTime + " and " + sch.ActiveEndTime;
 
             return desc;
+        }
+
+        #endregion
+
+        private static IEnumerable<ScheduleEvent> GenerateEventsHelper(Schedule schedule)
+        {
+            var sch = schedule;
+            var events = new Stack<ScheduleEvent>();
+            #region Logic for events generation
+
+            var timeFormat = "hh:mm A";
+            var dateFormat = "YYYY/MM/DD";
+            var dateTimeFormat = dateFormat + ' ' + timeFormat;
+
+
+            // var active_start_time_string = sch.ActiveStartTime == undefined ? "[start time not provided]" : moment(sch.ActiveStartTime).format(timeFormat);
+            // var active_end_time_string = sch.ActiveEndTime == undefined ? "[end time not provided]" : moment(sch.ActiveEndTime).format(timeFormat);
+            // var active_start_date_string = sch.ActiveStartDate == undefined ? "[start date not provided]" : moment(sch.ActiveStartDate).format(dateFormat);
+            // var active_end_date_string = sch.ActiveEndDate == undefined ? "[end date not provided]" : moment(sch.ActiveEndDate).format(dateFormat);
+
+            var initialDate = "1900-01-01";
+            var defaultDate = DateTime.Parse(initialDate);
+
+            var moment_active_start_time = DateTime.Parse(initialDate + " " + sch.ActiveStartTime);
+
+            //if end time is smaller than start time, this means event is spill over to day 2 e.g. event starting at 9 pm and would end by 3 am
+            //var isBefore = moment(sch.ActiveEndTime, "HH:mm").isBefore(moment(sch.ActiveStartTime, "HH:mm"));
+            var isBefore = sch.ActiveEndTime - sch.ActiveStartTime;
+            if (isBefore < TimeSpan.Zero)
+            {
+                defaultDate = DateTime.Parse(initialDate).AddDays(1);
+            }
+            var moment_active_end_time = defaultDate + sch.ActiveEndTime.ToTimeSpan();
+
+            var endTimeInSeconds = (moment_active_end_time - defaultDate).TotalSeconds;
+            var startTimeInSeconds = (moment_active_start_time - defaultDate).TotalSeconds;
+
+            var f = sch.FreqType;
+
+            switch (f)
+            {
+                case 1: //FreqType.OneTimeOnly:
+
+                    var startDate = sch.ActiveStartDate.ToDateTime(sch.ActiveStartTime);
+                    var endDate = sch.ActiveEndDate.ToDateTime(sch.ActiveEndTime);
+
+
+                    if (sch.DurationInterval > 0)
+                    {
+                        var a = (FreqSubdayType)sch.DurationSubdayType;
+
+                        if (a > FreqSubdayType.AtTheSpecifiedTime)
+                            endDate = startDate.Add(sch.DurationInterval, a);
+                    }
+                    events.Push(new ScheduleEvent { StartDate = startDate, EndDate = endDate });
+
+                    break;
+            }
+
+            #endregion
+
+
+            return events;
         }
     }
 }
