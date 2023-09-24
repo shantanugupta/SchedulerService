@@ -93,5 +93,33 @@ namespace SchedulerApi.FunctionalLayer
         Last = 16
     };
 
+
+    internal enum MomentTimeValue
+    {
+        Hours = 2,
+        Minutes = 4,
+        Second = 8
+    };
+
+    internal enum MomentWeek
+    {
+        Monday = 1,
+        Tuesday = 2,
+        Wednesday = 3,
+        Thursday = 4,
+        Friday = 5,
+        Saturday = 6,
+        Sunday = 7
+    };
+
+    internal enum MomentfreqRelativeInterval
+    {
+        First = 1
+        , Second = 2
+        , Third = 3
+        , Fourth = 4
+        , Last = 5
+    }
+
     #endregion
 }

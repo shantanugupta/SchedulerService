@@ -23,6 +23,21 @@ namespace SchedulerApi.Convertor
                     throw new ScheduleException("FreqSubdayType not supported");
             }
         }
+
+        public static DateTime Add(this DateTime input, int interval, MomentTimeValue type)
+        {
+            switch (type)
+            {
+                case MomentTimeValue.Second:
+                    return input.AddSeconds(interval);
+                case MomentTimeValue.Minutes:
+                    return input.AddMinutes(interval);
+                case MomentTimeValue.Hours:
+                    return input.AddHours(interval);
+                default:
+                    throw new ScheduleException("MomentTimeValue not supported");
+            }
+        }
     }
 
     internal static class Extension

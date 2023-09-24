@@ -359,6 +359,48 @@ namespace SchedulerApi.FunctionalLayer
                     events.Push(new ScheduleEvent { StartDate = startDate, EndDate = endDate });
 
                     break;
+                case 4: //FreqType.Daily:
+
+                    var activeEndDate = sch.ActiveEndDate.ToDateTime(TimeOnly.Parse("00:00")).AddSeconds(endTimeInSeconds);
+                    var nextDate = sch.ActiveStartDate.ToDateTime(TimeOnly.Parse("00:00")).AddSeconds(startTimeInSeconds);
+
+                    while (nextDate < activeEndDate)
+                    {
+                        var s = sch.FreqSubdayType;
+                        if (sch.OccuranceChoiceState == false && (s == 2 || s == 4 || s == 8))
+                        {
+                            var nextTime = nextDate;
+                            var nextEndTime = nextDate.AddSeconds(endTimeInSeconds);
+
+                            while (nextTime < nextEndTime)
+                            {
+                                //If duration is not specified, set end date = start date
+                                endDate = nextTime;
+                                if (sch.DurationInterval > 0)
+                                {
+                                    endDate = nextTime.Add(sch.DurationInterval, (MomentTimeValue)sch.DurationSubdayType);
+                                }
+                                events.Push(new ScheduleEvent { StartDate = nextTime, EndDate = endDate });
+
+                                nextTime = nextTime.Add(sch.FreqSubdayInterval, (MomentTimeValue)sch.FreqSubdayType);
+                            }
+                        }
+                        else
+                        {
+                            //If duration is not specified, set end date = start date
+                            endDate = nextDate;
+
+                            if (sch.DurationInterval > 0)
+                            {
+                                endDate = nextDate.Add(sch.DurationInterval, (MomentTimeValue)sch.DurationSubdayType);
+                            }
+                            if (nextDate >= DateTime.Now)
+                                events.Push(new ScheduleEvent { StartDate = nextDate, EndDate = endDate });
+                        }
+
+                        nextDate = nextDate.AddDays(sch.FreqInterval).AddSeconds(startTimeInSeconds);
+                    }
+                    break;
             }
 
             #endregion
