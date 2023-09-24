@@ -24,7 +24,7 @@ namespace SchedulerApi.Controllers
     {
         private readonly ILogger<SchedulerController> _logger;
 
-        internal SchedulerController(ILogger<SchedulerController> logger)
+        public SchedulerController(ILogger<SchedulerController> logger)
         {
             _logger = logger;
         }
@@ -62,9 +62,9 @@ namespace SchedulerApi.Controllers
         /// <returns>Generated events from server</returns>
         [HttpPost]
         [Route("GenerateEvents")]
-        public Response<ScheduleEvent> GenerateEvents(ScheduleContract schedule)
+        public Response<IEnumerable<ScheduleEvent>> GenerateEvents(ScheduleContract schedule)
         {
-            Response<ScheduleEvent> response = new();
+            Response<IEnumerable<ScheduleEvent>> response = new();
 
             Schedule model;
             try
@@ -78,7 +78,7 @@ namespace SchedulerApi.Controllers
             }
             
 
-            ScheduleManager.GenerateEvents(model);
+            response.Entity = ScheduleManager.GenerateEvents(model);
 
             return response;
         }

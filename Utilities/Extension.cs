@@ -60,7 +60,7 @@ namespace SchedulerApi.Convertor
             var to = new Schedule
             {
                 //ScheduleId = from.ScheduleId,
-                VersionNumber = from.VersionNumber,
+                //VersionNumber = from.VersionNumber,
                 Name = from.Name,
                 Description = from.Description,
                 FreqType = from.FreqType,
@@ -86,7 +86,7 @@ namespace SchedulerApi.Convertor
             var to = new ScheduleContract
             {
                 //ScheduleId = from.ScheduleId,
-                VersionNumber = from.VersionNumber,
+                //VersionNumber = from.VersionNumber,
                 Name = from.Name,
                 Description = from.Description,
                 FreqType = from.FreqType,
