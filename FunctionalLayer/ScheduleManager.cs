@@ -5,6 +5,8 @@ using System.Xml.Linq;
 using SchedulerApi.ApiContract;
 using SchedulerApi.Convertor;
 using System.Collections.Generic;
+using Microsoft.VisualBasic;
+using System.Runtime.Serialization;
 
 namespace SchedulerApi.FunctionalLayer
 {
@@ -22,14 +24,18 @@ namespace SchedulerApi.FunctionalLayer
     /// </summary>
     internal class ScheduleManager
     {
+        #region Management functions
+
         /// <summary>
         /// This function would validate all values presently set in this schedule. If the schedule is valid, response object would have flag set to true else false.
         /// </summary>
         /// <param name="schedule">Schedule to be validated</param>
         internal static Response<Schedule> ValidateSchedule(Schedule schedule)
         {
-            Response<Schedule> response = new Response<Schedule>();
-            response.Error = IsScheduleValid(schedule);
+            Response<Schedule> response = new()
+            {
+                Error = IsScheduleValid(schedule)
+            };
 
             return response;
         }
@@ -40,8 +46,9 @@ namespace SchedulerApi.FunctionalLayer
         /// <param name="schedule">Schedule for which events have to be generated</param>
         internal static IEnumerable<ScheduleEvent> GenerateEvents(Schedule schedule)
         {
-            throw new NotImplementedException();
+            return GenerateEventsHelper(schedule);
         }
+
 
         /// <summary>
         /// This function generates description of the schedule.
@@ -55,7 +62,7 @@ namespace SchedulerApi.FunctionalLayer
             response.Error = isValid;
 
             //Invalid schedule found? return
-            if (isValid.Count >0 && !isValid.TryGetValue(0, out _))
+            if (isValid.Count > 0 && !isValid.TryGetValue(0, out _))
                 return response;
 
             //We have a valid schedule here. Let's generate it's description
@@ -99,7 +106,7 @@ namespace SchedulerApi.FunctionalLayer
                 case (int)FreqType.OneTimeOnly:
                     messagePrefix = "For OneTime Schedule";
                     if (i.FreqInterval != 0)
-                        errorList.Add(2,$"{messagePrefix}, FreqInterval must be 0");
+                        errorList.Add(2, $"{messagePrefix}, FreqInterval must be 0");
                     break;
                 case (int)FreqType.Daily:
                     messagePrefix = "For Daily Schedule";
@@ -137,7 +144,7 @@ namespace SchedulerApi.FunctionalLayer
             if (i.FreqType != (int)FreqType.OneTimeOnly)
             {
                 var freqErrorList = IsFrequencyScheduleValid(i, messagePrefix);
-                return errorList.Union(freqErrorList).ToDictionary(kv => kv.Key, kv=>kv.Value);
+                return errorList.Union(freqErrorList).ToDictionary(kv => kv.Key, kv => kv.Value);
 
             }
 
@@ -282,6 +289,69 @@ namespace SchedulerApi.FunctionalLayer
                 desc = desc + " between " + s.ActiveStartTime + " and " + s.ActiveEndTime;
 
             return desc;
+        }
+
+        #endregion
+
+        private static IEnumerable<ScheduleEvent> GenerateEventsHelper(Schedule schedule)
+        {
+            var sch = schedule;
+            var events = new Stack<ScheduleEvent>();
+            #region Logic for events generation
+
+            var timeFormat = "hh:mm A";
+            var dateFormat = "YYYY/MM/DD";
+            var dateTimeFormat = dateFormat + ' ' + timeFormat;
+
+
+            // var active_start_time_string = sch.ActiveStartTime == undefined ? "[start time not provided]" : moment(sch.ActiveStartTime).format(timeFormat);
+            // var active_end_time_string = sch.ActiveEndTime == undefined ? "[end time not provided]" : moment(sch.ActiveEndTime).format(timeFormat);
+            // var active_start_date_string = sch.ActiveStartDate == undefined ? "[start date not provided]" : moment(sch.ActiveStartDate).format(dateFormat);
+            // var active_end_date_string = sch.ActiveEndDate == undefined ? "[end date not provided]" : moment(sch.ActiveEndDate).format(dateFormat);
+
+            var initialDate = "1900-01-01";
+            var defaultDate = DateTime.Parse(initialDate);
+
+            var moment_active_start_time = DateTime.Parse(initialDate + " " + sch.ActiveStartTime);
+
+            //if end time is smaller than start time, this means event is spill over to day 2 e.g. event starting at 9 pm and would end by 3 am
+            //var isBefore = moment(sch.ActiveEndTime, "HH:mm").isBefore(moment(sch.ActiveStartTime, "HH:mm"));
+            var isBefore = sch.ActiveEndTime - sch.ActiveStartTime;
+            if (isBefore < TimeSpan.Zero)
+            {
+                defaultDate = DateTime.Parse(initialDate).AddDays(1);
+            }
+            var moment_active_end_time = defaultDate + sch.ActiveEndTime.ToTimeSpan();
+
+            var endTimeInSeconds = (moment_active_end_time - defaultDate).TotalSeconds;
+            var startTimeInSeconds = (moment_active_start_time - defaultDate).TotalSeconds;
+
+            var f = sch.FreqType;
+
+            switch (f)
+            {
+                case 1: //FreqType.OneTimeOnly:
+
+                    var startDate = sch.ActiveStartDate.ToDateTime(sch.ActiveStartTime);
+                    var endDate = sch.ActiveEndDate.ToDateTime(sch.ActiveEndTime);
+
+
+                    if (sch.DurationInterval > 0)
+                    {
+                        var a = (FreqSubdayType)sch.DurationSubdayType;
+
+                        if (a > FreqSubdayType.AtTheSpecifiedTime)
+                            endDate = startDate.Add(sch.DurationInterval, a);
+                    }
+                    events.Push(new ScheduleEvent { StartDate = startDate, EndDate = endDate });
+
+                    break;
+            }
+
+            #endregion
+
+
+            return events;
         }
     }
 }
