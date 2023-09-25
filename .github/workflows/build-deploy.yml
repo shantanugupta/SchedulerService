@@ -1,14 +1,18 @@
-name: Build and deploy ASP.Net Core app to an Azure Web App
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
 
 env:
-  AZURE_WEBAPP_NAME: SchedulerService   # set this to your application's name
+  AZURE_WEBAPP_NAME: schedulerapi   # set this to your application's name
   AZURE_WEBAPP_PACKAGE_PATH: '.'      # set this to the path to your web app project, defaults to the repository root
   DOTNET_VERSION: '6'                 # set this to the .NET Core version to use
+
+name: Build and deploy ASP.Net Core app to Azure Web App - schedulerapi
 
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   build:
@@ -21,14 +25,7 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Set up dependency caching for faster builds
-        uses: actions/cache@v3
-        with:
-          path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-nuget-
+          include-prerelease: true
 
       - name: Build with dotnet
         run: dotnet build --configuration Release
@@ -57,8 +54,9 @@ jobs:
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
-        uses: azure/webapps-deploy@85270a1854658d167ab239bce43949edb336fa7c
+        uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          slot-name: 'production'
+          publish-profile: ${{ secrets.AzureAppService_PublishProfile_1234 }}
           package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
