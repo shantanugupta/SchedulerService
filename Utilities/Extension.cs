@@ -8,11 +8,14 @@ namespace SchedulerApi.Convertor
     internal static class RangeExtensions
     {
         public static bool In(this Range range, int value) => range.Start.Value <= value && value <= range.End.Value;
+    }
 
+    internal static class DateTimeHelper
+    {
         public static DateTime Add(this DateTime input, int interval, FreqSubdayType type)
         {
             switch (type)
-            {                
+            {
                 case FreqSubdayType.Seconds:
                     return input.AddSeconds(interval);
                 case FreqSubdayType.Minutes:
@@ -38,6 +41,28 @@ namespace SchedulerApi.Convertor
                     throw new ScheduleException("MomentTimeValue not supported");
             }
         }
+
+        public static DateTime To(this DateTime input, DateTo type)
+        {
+            switch (type)
+            {
+                case DateTo.StartOfDay:
+                    return input.Date;
+                case DateTo.EndOfDay:
+                    return input.Date.AddDays(1).AddTicks(-1);
+                case DateTo.StartOfMonth:
+                    return new DateTime(input.Year, input.Month, 1);
+                case DateTo.EndOfMonth:
+                    return new DateTime(input.Year, input.Month, 1).AddMonths(1).AddSeconds(-1);
+                case DateTo.StartOfYear:
+                    return new DateTime(input.Year, 1, 1);
+                case DateTo.EndOfYear:
+                    return new DateTime(input.Year, 1, 1).AddYears(1).AddSeconds(-1);
+                default:
+                    throw new ScheduleException("Date conversion not supported");
+            }
+        }
+
     }
 
     internal static class Extension

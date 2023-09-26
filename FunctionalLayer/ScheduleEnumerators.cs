@@ -121,5 +121,15 @@ namespace SchedulerApi.FunctionalLayer
         , Last = 5
     }
 
+    internal enum DateTo
+    {
+        StartOfDay,
+        EndOfDay,
+        StartOfMonth,
+        EndOfMonth,
+        StartOfYear,
+        EndOfYear
+    }
+
     #endregion
 }

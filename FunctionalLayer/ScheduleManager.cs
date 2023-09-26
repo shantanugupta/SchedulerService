@@ -309,7 +309,7 @@ namespace SchedulerApi.FunctionalLayer
         private static IEnumerable<ScheduleEvent> GenerateEventsHelper(Schedule schedule)
         {
             var sch = schedule;
-            var events = new Stack<ScheduleEvent>();
+            var events = new Queue<ScheduleEvent>();
             #region Logic for events generation
 
             var timeFormat = "hh:mm A";
@@ -356,7 +356,7 @@ namespace SchedulerApi.FunctionalLayer
                         if (a > FreqSubdayType.AtTheSpecifiedTime)
                             endDate = startDate.Add(sch.DurationInterval, a);
                     }
-                    events.Push(new ScheduleEvent { StartDate = startDate, EndDate = endDate });
+                    events.Enqueue(new ScheduleEvent { ScheduleEventId = events.Count + 1, StartDate = startDate, EndDate = endDate });
 
                     break;
                 case 4: //FreqType.Daily:
@@ -364,15 +364,15 @@ namespace SchedulerApi.FunctionalLayer
                     var activeEndDate = sch.ActiveEndDate.ToDateTime(TimeOnly.Parse("00:00")).AddSeconds(endTimeInSeconds);
                     var nextDate = sch.ActiveStartDate.ToDateTime(TimeOnly.Parse("00:00")).AddSeconds(startTimeInSeconds);
 
-                    while (nextDate < activeEndDate)
+                    while (nextDate <= activeEndDate)
                     {
                         var s = sch.FreqSubdayType;
                         if (sch.OccuranceChoiceState == false && (s == 2 || s == 4 || s == 8))
                         {
                             var nextTime = nextDate;
-                            var nextEndTime = nextDate.AddSeconds(endTimeInSeconds);
+                            var nextEndTime = nextDate.To(DateTo.StartOfDay).AddSeconds(endTimeInSeconds);
 
-                            while (nextTime < nextEndTime)
+                            while (nextTime <= nextEndTime)
                             {
                                 //If duration is not specified, set end date = start date
                                 endDate = nextTime;
@@ -380,7 +380,8 @@ namespace SchedulerApi.FunctionalLayer
                                 {
                                     endDate = nextTime.Add(sch.DurationInterval, (MomentTimeValue)sch.DurationSubdayType);
                                 }
-                                events.Push(new ScheduleEvent { StartDate = nextTime, EndDate = endDate });
+                                if (nextTime >= DateTime.Now)
+                                    events.Enqueue(new ScheduleEvent { ScheduleEventId = events.Count + 1, StartDate = nextTime, EndDate = endDate });
 
                                 nextTime = nextTime.Add(sch.FreqSubdayInterval, (MomentTimeValue)sch.FreqSubdayType);
                             }
@@ -395,10 +396,10 @@ namespace SchedulerApi.FunctionalLayer
                                 endDate = nextDate.Add(sch.DurationInterval, (MomentTimeValue)sch.DurationSubdayType);
                             }
                             if (nextDate >= DateTime.Now)
-                                events.Push(new ScheduleEvent { StartDate = nextDate, EndDate = endDate });
+                                events.Enqueue(new ScheduleEvent { ScheduleEventId= events.Count()+1, StartDate = nextDate, EndDate = endDate });
                         }
-
-                        nextDate = nextDate.AddDays(sch.FreqInterval).AddSeconds(startTimeInSeconds);
+                        
+                        nextDate = nextDate.To(DateTo.StartOfDay).AddDays(sch.FreqInterval).AddSeconds(startTimeInSeconds);
                     }
                     break;
             }

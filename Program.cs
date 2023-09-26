@@ -17,6 +17,8 @@ internal class Program
             option.Filters.Add(new ProducesAttribute("application/json"));
         });
 
+        builder.Services.AddHealthChecks();
+
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(setup =>
@@ -50,6 +52,8 @@ internal class Program
         var app = builder.Build();
 
         #region App configuration
+        app.MapHealthChecks("/healthz");
+
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
