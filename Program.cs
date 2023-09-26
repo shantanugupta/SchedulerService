@@ -61,6 +61,11 @@ internal class Program
             app.UseSwaggerUI();
             //app.UseCors(p => p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
         }
+        else if(app.Environment.IsProduction())
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI();
+        }
 
         app.UseCors(p => p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
         //app.UseCors("corspolicy");
