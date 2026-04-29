@@ -51,15 +51,52 @@ namespace SchedulerApi.FunctionalLayer
                 return response;
             }
 
-            if (input.ScheduleId == Guid.Empty)
-                input.ScheduleId = Guid.NewGuid();
+            var id = input.ScheduleId == Guid.Empty ? Guid.NewGuid() : input.ScheduleId;
 
-            _store.AddOrUpdate(
-                input.ScheduleId,
-                key => { input.VersionNumber = 1; return input; },
-                (key, existing) => { input.VersionNumber = existing.VersionNumber + 1; return input; });
+            var saved = _store.AddOrUpdate(
+                id,
+                _ => new Schedule
+                {
+                    ScheduleId = id,
+                    VersionNumber = 1,
+                    Name = input.Name,
+                    Description = input.Description,
+                    FreqType = input.FreqType,
+                    FreqInterval = input.FreqInterval,
+                    FreqSubdayType = input.FreqSubdayType,
+                    FreqSubdayInterval = input.FreqSubdayInterval,
+                    FreqRelativeInterval = input.FreqRelativeInterval,
+                    FreqRecurrenceFactor = input.FreqRecurrenceFactor,
+                    DurationSubdayType = input.DurationSubdayType,
+                    DurationInterval = input.DurationInterval,
+                    ActiveStartDate = input.ActiveStartDate,
+                    ActiveEndDate = input.ActiveEndDate,
+                    ActiveStartTime = input.ActiveStartTime,
+                    ActiveEndTime = input.ActiveEndTime,
+                    OccuranceChoiceState = input.OccuranceChoiceState
+                },
+                (_, existing) => new Schedule
+                {
+                    ScheduleId = id,
+                    VersionNumber = existing.VersionNumber + 1,
+                    Name = input.Name,
+                    Description = input.Description,
+                    FreqType = input.FreqType,
+                    FreqInterval = input.FreqInterval,
+                    FreqSubdayType = input.FreqSubdayType,
+                    FreqSubdayInterval = input.FreqSubdayInterval,
+                    FreqRelativeInterval = input.FreqRelativeInterval,
+                    FreqRecurrenceFactor = input.FreqRecurrenceFactor,
+                    DurationSubdayType = input.DurationSubdayType,
+                    DurationInterval = input.DurationInterval,
+                    ActiveStartDate = input.ActiveStartDate,
+                    ActiveEndDate = input.ActiveEndDate,
+                    ActiveStartTime = input.ActiveStartTime,
+                    ActiveEndTime = input.ActiveEndTime,
+                    OccuranceChoiceState = input.OccuranceChoiceState
+                });
 
-            response.Entity = _store[input.ScheduleId];
+            response.Entity = saved;
             return response;
         }
 
