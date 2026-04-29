@@ -30,35 +30,62 @@ namespace SchedulerApi.Controllers
         }
 
         /// <summary>
-        /// Returns a default schedule
+        /// Returns service health status
         /// </summary>
-        /// <returns>Returns a list of blank schedules</returns>
-        [HttpGet(Name = "GetSchedule")]
-        public IEnumerable<ScheduleContract> Get()
+        /// <returns>200 OK with "Healthy" when service is running</returns>
+        [HttpGet("health", Name = "HealthCheck")]
+        public IActionResult Health()
         {
-            return Enumerable.Range(1, 5).Select(index => new ScheduleContract
-            {
-               
-            })
-            .ToArray();
+            return Ok(new { status = "Healthy" });
         }
 
         /// <summary>
-        /// Saves a schedule into data store
+        /// Returns all saved schedules
         /// </summary>
-        /// <param name="schedule">schedule to save</param>
-        /// <returns>Saved schedule object</returns>
-        [HttpPost(Name = "SetSchedule")]
-        public IEnumerable<ScheduleContract> Set(ScheduleContract schedule)
+        /// <returns>Stored schedules wrapped in a Response object</returns>
+        [HttpGet(Name = "GetSchedule")]
+        public Response<IEnumerable<ScheduleContract>> Get()
         {
-            return Enumerable.Range(1, 5).Select(index => schedule)
-            .ToArray();
+            var schedules = ScheduleManager.GetAll().Select(s => s.ToContract());
+            return new Response<IEnumerable<ScheduleContract>>(schedules);
+        }
+
+        /// <summary>
+        /// Saves a schedule into the data store
+        /// </summary>
+        /// <param name="schedule">Schedule to save</param>
+        /// <returns>Saved schedule wrapped in a Response object, or validation errors</returns>
+        [HttpPost(Name = "SetSchedule")]
+        public Response<ScheduleContract> Set(ScheduleContract schedule)
+        {
+            Response<ScheduleContract> response = new();
+
+            Schedule model;
+            try
+            {
+                model = schedule.ConvertTo<Schedule>();
+            }
+            catch (FormatException ex)
+            {
+                response.Error.Add(1, ex.Message);
+                return response;
+            }
+
+            var saveResult = ScheduleManager.Save(model);
+            if (saveResult.Error.Count > 0)
+            {
+                response.Error = saveResult.Error;
+                return response;
+            }
+
+            response.Entity = saveResult.Entity.ToContract();
+            return response;
         }
 
         /// <summary>
         /// Generates events
         /// </summary>
-        /// <param name="schedule">schedule to use</param>
+        /// <param name="schedule">Schedule to use</param>
         /// <returns>Generated events from server</returns>
         [HttpPost]
         [Route("GenerateEvents")]
@@ -86,7 +113,7 @@ namespace SchedulerApi.Controllers
         /// <summary>
         /// Generates description
         /// </summary>
-        /// <param name="schedule">schedule to use</param>
+        /// <param name="schedule">Schedule to use</param>
         /// <returns>Generates schedule description from server</returns>
         [HttpPost]
         [Route("GenerateDescription")]

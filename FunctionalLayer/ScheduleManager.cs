@@ -7,6 +7,7 @@ using SchedulerApi.Convertor;
 using System.Collections.Generic;
 using Microsoft.VisualBasic;
 using System.Runtime.Serialization;
+using System.Collections.Concurrent;
 
 namespace SchedulerApi.FunctionalLayer
 {
@@ -24,7 +25,80 @@ namespace SchedulerApi.FunctionalLayer
     /// </summary>
     internal class ScheduleManager
     {
+        private static readonly ConcurrentDictionary<Guid, Schedule> _store = new();
+
         #region Management functions
+
+        /// <summary>
+        /// Returns all stored schedules.
+        /// </summary>
+        internal static IEnumerable<Schedule> GetAll() => _store.Values;
+
+        /// <summary>
+        /// Saves or updates a schedule in the in-memory store.
+        /// Assigns a new ScheduleId when one is not already set and increments the version number.
+        /// </summary>
+        /// <param name="input">Schedule to save</param>
+        internal static Response<Schedule> Save(Schedule input)
+        {
+            Response<Schedule> response = new();
+
+            var isValid = IsScheduleValid(input);
+            if (isValid.Count > 0)
+            {
+                foreach (var kv in isValid)
+                    response.Error.Add(kv.Key, kv.Value);
+                return response;
+            }
+
+            var id = input.ScheduleId == Guid.Empty ? Guid.NewGuid() : input.ScheduleId;
+
+            var saved = _store.AddOrUpdate(
+                id,
+                _ => new Schedule
+                {
+                    ScheduleId = id,
+                    VersionNumber = 1,
+                    Name = input.Name,
+                    Description = input.Description,
+                    FreqType = input.FreqType,
+                    FreqInterval = input.FreqInterval,
+                    FreqSubdayType = input.FreqSubdayType,
+                    FreqSubdayInterval = input.FreqSubdayInterval,
+                    FreqRelativeInterval = input.FreqRelativeInterval,
+                    FreqRecurrenceFactor = input.FreqRecurrenceFactor,
+                    DurationSubdayType = input.DurationSubdayType,
+                    DurationInterval = input.DurationInterval,
+                    ActiveStartDate = input.ActiveStartDate,
+                    ActiveEndDate = input.ActiveEndDate,
+                    ActiveStartTime = input.ActiveStartTime,
+                    ActiveEndTime = input.ActiveEndTime,
+                    OccuranceChoiceState = input.OccuranceChoiceState
+                },
+                (_, existing) => new Schedule
+                {
+                    ScheduleId = id,
+                    VersionNumber = existing.VersionNumber + 1,
+                    Name = input.Name,
+                    Description = input.Description,
+                    FreqType = input.FreqType,
+                    FreqInterval = input.FreqInterval,
+                    FreqSubdayType = input.FreqSubdayType,
+                    FreqSubdayInterval = input.FreqSubdayInterval,
+                    FreqRelativeInterval = input.FreqRelativeInterval,
+                    FreqRecurrenceFactor = input.FreqRecurrenceFactor,
+                    DurationSubdayType = input.DurationSubdayType,
+                    DurationInterval = input.DurationInterval,
+                    ActiveStartDate = input.ActiveStartDate,
+                    ActiveEndDate = input.ActiveEndDate,
+                    ActiveStartTime = input.ActiveStartTime,
+                    ActiveEndTime = input.ActiveEndTime,
+                    OccuranceChoiceState = input.OccuranceChoiceState
+                });
+
+            response.Entity = saved;
+            return response;
+        }
 
         /// <summary>
         /// This function would validate all values presently set in this schedule. If the schedule is valid, response object would have flag set to true else false.
@@ -73,22 +147,6 @@ namespace SchedulerApi.FunctionalLayer
             return response;
         }
 
-        internal static Response<Schedule> Add(Schedule input)
-        {
-            Response<Schedule> response = new();
-
-            var i = input;
-            var isValid = IsScheduleValid(input);
-
-            if (!isValid.TryGetValue(0, out _))
-            {
-                foreach (var kv in isValid)
-                    response.Error.Add(kv.Key, kv.Value);
-                return response;
-            }
-
-            return response;
-        }
 
         private static IDictionary<int, string> IsScheduleValid(Schedule input)
         {

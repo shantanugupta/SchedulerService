@@ -14,15 +14,15 @@ namespace SchedulerApi.ApiContract
         /// Schedule ID <br></br>
         /// Unique identifier of the schedule. This value is used to identify a schedule for distributed schedules.
         /// </summary>
-        //[JsonPropertyName("schedule_id")]
-        //public string ScheduleId { get; set; }
+        [JsonPropertyName("schedule_id")]
+        public Guid? ScheduleId { get; set; }
 
         /// <summary>
-        /// Schedule verion <br></br>
+        /// Schedule version <br></br>
         /// Current version number of the schedule. For example, if a schedule has been modified 10 times, the version_number is 10.
         /// </summary>
-        //[JsonPropertyName("version_number")]
-        //public int VersionNumber { get; set; }
+        [JsonPropertyName("version_number")]
+        public int VersionNumber { get; set; }
 
         /// <summary>
         /// name property <br></br>
