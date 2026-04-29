@@ -7,6 +7,7 @@ using SchedulerApi.Convertor;
 using System.Collections.Generic;
 using Microsoft.VisualBasic;
 using System.Runtime.Serialization;
+using System.Collections.Concurrent;
 
 namespace SchedulerApi.FunctionalLayer
 {
@@ -24,7 +25,43 @@ namespace SchedulerApi.FunctionalLayer
     /// </summary>
     internal class ScheduleManager
     {
+        private static readonly ConcurrentDictionary<Guid, Schedule> _store = new();
+
         #region Management functions
+
+        /// <summary>
+        /// Returns all stored schedules.
+        /// </summary>
+        internal static IEnumerable<Schedule> GetAll() => _store.Values;
+
+        /// <summary>
+        /// Saves or updates a schedule in the in-memory store.
+        /// Assigns a new ScheduleId when one is not already set and increments the version number.
+        /// </summary>
+        /// <param name="input">Schedule to save</param>
+        internal static Response<Schedule> Save(Schedule input)
+        {
+            Response<Schedule> response = new();
+
+            var isValid = IsScheduleValid(input);
+            if (isValid.Count > 0)
+            {
+                foreach (var kv in isValid)
+                    response.Error.Add(kv.Key, kv.Value);
+                return response;
+            }
+
+            if (input.ScheduleId == Guid.Empty)
+                input.ScheduleId = Guid.NewGuid();
+
+            _store.AddOrUpdate(
+                input.ScheduleId,
+                key => { input.VersionNumber = 1; return input; },
+                (key, existing) => { input.VersionNumber = existing.VersionNumber + 1; return input; });
+
+            response.Entity = _store[input.ScheduleId];
+            return response;
+        }
 
         /// <summary>
         /// This function would validate all values presently set in this schedule. If the schedule is valid, response object would have flag set to true else false.
@@ -73,22 +110,6 @@ namespace SchedulerApi.FunctionalLayer
             return response;
         }
 
-        internal static Response<Schedule> Add(Schedule input)
-        {
-            Response<Schedule> response = new();
-
-            var i = input;
-            var isValid = IsScheduleValid(input);
-
-            if (!isValid.TryGetValue(0, out _))
-            {
-                foreach (var kv in isValid)
-                    response.Error.Add(kv.Key, kv.Value);
-                return response;
-            }
-
-            return response;
-        }
 
         private static IDictionary<int, string> IsScheduleValid(Schedule input)
         {

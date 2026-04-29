@@ -80,12 +80,14 @@ namespace SchedulerApi.Convertor
             return (T)to;
         }
 
+        internal static ScheduleContract ToContract(this Schedule from) => from.Convert();
+
         private static Schedule Convert(this ScheduleContract from)
         {
             var to = new Schedule
             {
-                //ScheduleId = from.ScheduleId,
-                //VersionNumber = from.VersionNumber,
+                ScheduleId = from.ScheduleId ?? Guid.Empty,
+                VersionNumber = from.VersionNumber,
                 Name = from.Name,
                 Description = from.Description,
                 FreqType = from.FreqType,
@@ -110,8 +112,8 @@ namespace SchedulerApi.Convertor
         {
             var to = new ScheduleContract
             {
-                //ScheduleId = from.ScheduleId,
-                //VersionNumber = from.VersionNumber,
+                ScheduleId = from.ScheduleId,
+                VersionNumber = from.VersionNumber,
                 Name = from.Name,
                 Description = from.Description,
                 FreqType = from.FreqType,
